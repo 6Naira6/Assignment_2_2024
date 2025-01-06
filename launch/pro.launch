@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="assignment_2_2024" type="action_client.py" name="action_client" output="screen" />
+    <node pkg="assignment_2_2024" type="target_service.py" name="target_service" output="screen" />
+</launch>
+
+

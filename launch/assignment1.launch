@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find assignment_2_2024)/launch/sim_w1.launch" />
+    
+    <node pkg="assignment_2_2024" type="wall_follow_service.py" name="wall_follower" />
+    <node pkg="assignment_2_2024" type="go_to_point_service.py" name="go_to_point"  />
+    <node pkg="assignment_2_2024" type="bug_as.py" name="bug_action_service"  />
+    <node pkg="assignment_2_2024" type="action_client.py" name="action_client"  />
+    <node pkg="assignment_2_2024" type="target_service.py" name="target_service" output="screen" />
+</launch>
