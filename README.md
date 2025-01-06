@@ -89,8 +89,8 @@ message: "5.0, 5.0"
 
 ## **Proof of Work**
 
-![Demo GIF](With Commands.gif)
+![Demo GIF](WithCommands.gif)
 
 
-![Demo GIF](With Data.gif)
+![Demo GIF](WithData.gif)
 
