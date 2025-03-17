@@ -1,5 +1,39 @@
 #! /usr/bin/env python3
 
+"""
+.. module:: bug0
+   :platform: Unix
+   :synopsis: Python module implementing a bug0 approach to navigation
+
+.. moduleauthor:: Arian Tavousi
+
+This ROS node implements a bug0-based navigation strategy. It alternates between
+driving straight to a goal and following walls when obstacles are detected.
+
+**Subscribers:**
+    - `/scan` (:class:`sensor_msgs.msg.LaserScan`): Receives laser scan data to identify obstacles.
+    - `/odom` (:class:`nav_msgs.msg.Odometry`): Receives odometry data to track the robot's position and orientation.
+
+**Publishers:**
+    - `/cmd_vel` (:class:`geometry_msgs.msg.Twist`): Publishes velocity commands to move the robot.
+
+**Services:**
+    - `/go_to_point_switch` (:class:`std_srvs.srv.SetBool`): Toggles the go-to-point functionality.
+    - `/wall_follower_switch` (:class:`std_srvs.srv.SetBool`): Toggles the wall-following functionality.
+
+**Action Server:**
+    - `/reaching_goal` (:class:`assignment_2_2024.msg.PlanningAction`): Receives target positions for navigation.
+
+Additional Details:
+    This node embodies a “Bug0” approach to navigation: 
+    1) The robot attempts to move in a direct line toward its goal.
+    2) If there is an obstacle directly in front, it switches to wall-following behavior.
+    3) Once it can head straight for the goal again, it switches back to go-to-point mode. 
+
+    This simple yet effective reactive algorithm helps navigate cluttered environments 
+    without complex mapping or planning, making it suitable for real-time robotics scenarios.
+"""
+
 import rospy
 from geometry_msgs.msg import Point, Pose, Twist
 from sensor_msgs.msg import LaserScan
@@ -27,10 +61,19 @@ state_ = 0
 # 1 - wall following
 # 2 - done
 # 3 - canceled
-# callbacks
-
 
 def clbk_odom(msg):
+    """
+    Callback for the /odom subscriber.
+    
+    Updates the global position_, pose_, and yaw_ variables based on odometry data.
+
+    :param msg: The Odometry message containing the robot's current position and orientation.
+    :type msg: nav_msgs.msg.Odometry
+
+    The orientation (yaw) is extracted from the quaternion in the Odometry message and used
+    to guide directional checks during navigation.
+    """
     global position_, yaw_, pose_
 
     # position
@@ -46,8 +89,19 @@ def clbk_odom(msg):
     euler = transformations.euler_from_quaternion(quaternion)
     yaw_ = euler[2]
 
-
 def clbk_laser(msg):
+    """
+    Callback for the /scan subscriber.
+
+    Stores the minimum distances in different regions around the robot.
+
+    :param msg: The LaserScan message containing distance readings.
+    :type msg: sensor_msgs.msg.LaserScan
+
+    The node splits the laser range array into slices (right, fright, front, fleft, left),
+    each limited to a maximum distance of 10. This helps the robot decide whether to proceed
+    forward or switch to wall-following mode.
+    """
     global regions_
     regions_ = {
         'right':  min(min(msg.ranges[0:143]), 10),
@@ -57,8 +111,18 @@ def clbk_laser(msg):
         'left':   min(min(msg.ranges[576:719]), 10),
     }
 
-
 def change_state(state):
+    """
+    Changes the current navigation state and toggles the respective services.
+    
+    :param state: The state to switch to (0 -> go to point, 1 -> wall following, 2 -> done).
+    :type state: int
+
+    Depending on the state:
+    - **Go to point**: Calls `/go_to_point_switch` with True; `/wall_follower_switch` with False.
+    - **Wall following**: Calls `/go_to_point_switch` with False; `/wall_follower_switch` with True.
+    - **Done**: Disables both to stop movement.
+    """
     global state_, state_desc_
     global srv_client_wall_follower_, srv_client_go_to_point_
     state_ = state
@@ -74,20 +138,53 @@ def change_state(state):
         resp = srv_client_go_to_point_(False)
         resp = srv_client_wall_follower_(False)
 
-
 def normalize_angle(angle):
+    """
+    Normalizes the given angle to be within [-pi, pi].
+
+    :param angle: The angle to normalize (in radians).
+    :type angle: float
+    :return: The normalized angle.
+    :rtype: float
+
+    This utility helps compare headings by preventing large jumps 
+    when angles cross the +pi/-pi boundary.
+    """
     if(math.fabs(angle) > math.pi):
         angle = angle - (2 * math.pi * angle) / (math.fabs(angle))
     return angle
     
 def done():
+    """
+    Publishes a zero velocity command to stop the robot.
+
+    Typically invoked when the goal is reached or canceled,
+    ensuring the robot remains stationary.
+    """
     twist_msg = Twist()
     twist_msg.linear.x = 0
     twist_msg.angular.z = 0
     pub.publish(twist_msg)
     
-    
 def planning(goal):
+    """
+    Action server callback for handling navigation goals.
+    
+    Drives the robot towards the desired position, switching to wall-following when needed.
+
+    :param goal: The navigation goal containing the target pose.
+    :type goal: assignment_2_2024.msg.PlanningGoal
+
+    Steps:
+    1. Set initial state to "go to point".
+    2. Continuously check the distance to the goal.
+    3. If the robot is close, stop the action as "succeeded".
+    4. If there's an obstacle, switch to wall following.
+    5. If the obstacle is cleared, switch back to go to point.
+    6. Handle any preemption requests (cancellation).
+
+    During execution, feedback is published so other nodes or tools can track the robot’s status.
+    """
     global regions_, position_, desired_position_, state_, yaw_, yaw_error_allowed_
     global srv_client_go_to_point_, srv_client_wall_follower_, act_s, pose_
     change_state(0)
@@ -99,13 +196,12 @@ def planning(goal):
     rospy.set_param('des_pos_x', desired_position_.x)
     rospy.set_param('des_pos_y', desired_position_.y)
     
-    
     feedback = assignment_2_2024.msg.PlanningFeedback()
     result = assignment_2_2024.msg.PlanningResult()
     
     while not rospy.is_shutdown():
         err_pos = math.sqrt(pow(desired_position_.y - position_.y, 2) +
-                        pow(desired_position_.x - position_.x, 2))
+                            pow(desired_position_.x - position_.x, 2))
         if act_s.is_preempt_requested():
             rospy.loginfo("Goal was preeempted")
             feedback.stat = "Target cancelled!"
@@ -141,10 +237,8 @@ def planning(goal):
             err_yaw = normalize_angle(desired_yaw - yaw_)
             if regions_['front'] > 1 and math.fabs(err_yaw) < 0.05:
                 change_state(0)
-        elif state_== 2:
+        elif state_ == 2:
             break
-            
-            
         else:
             rospy.logerr('Unknown state!')
 
@@ -153,10 +247,16 @@ def planning(goal):
     if success:
         rospy.loginfo('Goal: Succeeded!')
         act_s.set_succeeded(result)
-    
-    
 
 def main():
+    """
+    Initializes the node, sets up subscriptions, publishers, and services,
+    and starts the action server for receiving navigation goals.
+
+    The node runs at ~20 Hz, continuously checking whether it should go
+    forward or switch to wall following. On receiving action goals via
+    `/reaching_goal`, it heads toward the target while reacting to obstacles.
+    """
     time.sleep(2)
     global regions_, position_, desired_position_, state_, yaw_, yaw_error_allowed_
     global srv_client_go_to_point_, srv_client_wall_follower_, act_s, pub
@@ -170,16 +270,14 @@ def main():
     sub_laser = rospy.Subscriber('/scan', LaserScan, clbk_laser)
     sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-    srv_client_go_to_point_ = rospy.ServiceProxy(
-        '/go_to_point_switch', SetBool)
-    srv_client_wall_follower_ = rospy.ServiceProxy(
-        '/wall_follower_switch', SetBool)
-    act_s = actionlib.SimpleActionServer('/reaching_goal', assignment_2_2024.msg.PlanningAction, planning, auto_start=False)
+    srv_client_go_to_point_ = rospy.ServiceProxy('/go_to_point_switch', SetBool)
+    srv_client_wall_follower_ = rospy.ServiceProxy('/wall_follower_switch', SetBool)
+    act_s = actionlib.SimpleActionServer('/reaching_goal',
+                                         assignment_2_2024.msg.PlanningAction,
+                                         planning,
+                                         auto_start=False)
     act_s.start()
    
-    # initialize going to the point
-    
-
     rate = rospy.Rate(20)
     while not rospy.is_shutdown():
         rate.sleep()
