@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wall Follow Service &mdash; Assignment 2 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Target Service" href="target_service.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Assignment 2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="action_client.html">Action Client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bug_as.html">Bug Action Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="go_to_point_service.html">Go to Point Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="target_service.html">Target Service</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Wall Follow Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.wall_follow_service.change_state"><code class="docutils literal notranslate"><span class="pre">change_state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.wall_follow_service.clbk_laser"><code class="docutils literal notranslate"><span class="pre">clbk_laser()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.wall_follow_service.find_wall"><code class="docutils literal notranslate"><span class="pre">find_wall()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.wall_follow_service.follow_the_wall"><code class="docutils literal notranslate"><span class="pre">follow_the_wall()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.wall_follow_service.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.wall_follow_service.take_action"><code class="docutils literal notranslate"><span class="pre">take_action()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.wall_follow_service.turn_left"><code class="docutils literal notranslate"><span class="pre">turn_left()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.wall_follow_service.wall_follower_switch"><code class="docutils literal notranslate"><span class="pre">wall_follower_switch()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Assignment 2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Modules</a></li>
+      <li class="breadcrumb-item active">Wall Follow Service</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/wall_follow_service.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-scripts.wall_follow_service">
+<span id="wall-follow-service"></span><h1>Wall Follow Service<a class="headerlink" href="#module-scripts.wall_follow_service" title="Link to this heading"></a></h1>
+<p id="module-wall_follow_service"><em>Module author: Arian Tavousi</em></p>
+<p>This node enables a robot to follow walls using laser scan data.</p>
+<dl>
+<dt><strong>Subscribers:</strong></dt><dd><ul class="simple">
+<li><p><cite>/scan</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">sensor_msgs.msg.LaserScan</span></code>): Receives laser scan data.</p></li>
+</ul>
+</dd>
+<dt><strong>Publishers:</strong></dt><dd><ul class="simple">
+<li><p><cite>/cmd_vel</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">geometry_msgs.msg.Twist</span></code>): Publishes velocity commands to control the robot.</p></li>
+</ul>
+</dd>
+<dt><strong>Services:</strong></dt><dd><ul class="simple">
+<li><p><cite>/wall_follower_switch</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">std_srvs.srv.SetBool</span></code>): Activates or deactivates the wall-following behavior.</p></li>
+</ul>
+</dd>
+<dt>Additional Details:</dt><dd><dl class="simple">
+<dt>The wall follower maintains three states:</dt><dd><ol class="arabic simple" start="0">
+<li><p><strong>find the wall</strong> – Moves forward while turning right gently, seeking a wall to follow.</p></li>
+<li><p><strong>turn left</strong> – Used when the robot faces an obstacle or reaches a corner.</p></li>
+<li><p><strong>follow the wall</strong> – Moves forward, hugging the wall at a safe distance.</p></li>
+</ol>
+</dd>
+</dl>
+<p>By monitoring the minimum distances in specific sectors (front, fright, fleft, etc.),
+the robot can navigate along walls or avoid obstacles. Activating and deactivating
+wall-following is managed through the <cite>/wall_follower_switch</cite> service.</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.wall_follow_service.change_state">
+<span class="sig-prename descclassname"><span class="pre">scripts.wall_follow_service.</span></span><span class="sig-name descname"><span class="pre">change_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/wall_follow_service.html#change_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.wall_follow_service.change_state" title="Link to this definition"></a></dt>
+<dd><p>Updates the robot’s state if it has changed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The new state (0 -&gt; find the wall, 1 -&gt; turn left, 2 -&gt; follow the wall).</p>
+</dd>
+</dl>
+<p>Logs a message to indicate the new state for debug purposes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.wall_follow_service.clbk_laser">
+<span class="sig-prename descclassname"><span class="pre">scripts.wall_follow_service.</span></span><span class="sig-name descname"><span class="pre">clbk_laser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/wall_follow_service.html#clbk_laser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.wall_follow_service.clbk_laser" title="Link to this definition"></a></dt>
+<dd><p>Callback function for laser scan data.</p>
+<p>Updates <cite>regions_</cite> with the minimum distances in different directions and triggers <cite>take_action()</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>msg</strong> (<em>sensor_msgs.msg.LaserScan</em>) – Laser scan message.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Sectors are defined as follows (angles approximate, for a 720-range scan):</dt><dd><ul class="simple">
+<li><p>right:   [0..143]</p></li>
+<li><p>fright: [144..287]</p></li>
+<li><p>front:  [288..431]</p></li>
+<li><p>fleft:  [432..575]</p></li>
+<li><p>left:   [576..713]</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.wall_follow_service.find_wall">
+<span class="sig-prename descclassname"><span class="pre">scripts.wall_follow_service.</span></span><span class="sig-name descname"><span class="pre">find_wall</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/wall_follow_service.html#find_wall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.wall_follow_service.find_wall" title="Link to this definition"></a></dt>
+<dd><p>Generates a velocity command to move forward while turning right slightly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Twist message to move the robot.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>geometry_msgs.msg.Twist</p>
+</dd>
+</dl>
+<p>Used when no walls are detected close by.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.wall_follow_service.follow_the_wall">
+<span class="sig-prename descclassname"><span class="pre">scripts.wall_follow_service.</span></span><span class="sig-name descname"><span class="pre">follow_the_wall</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/wall_follow_service.html#follow_the_wall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.wall_follow_service.follow_the_wall" title="Link to this definition"></a></dt>
+<dd><p>Generates a velocity command to follow the wall by moving forward.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Twist message to move forward.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>geometry_msgs.msg.Twist</p>
+</dd>
+</dl>
+<p>Designed to keep the robot parallel to the wall on its right,
+adjusted by the distance thresholds in <cite>take_action()</cite>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.wall_follow_service.main">
+<span class="sig-prename descclassname"><span class="pre">scripts.wall_follow_service.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/wall_follow_service.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.wall_follow_service.main" title="Link to this definition"></a></dt>
+<dd><p>Main function to initialize the node and manage robot movement.</p>
+<dl class="simple">
+<dt>Steps:</dt><dd><ol class="arabic simple">
+<li><p>Initializes the ROS node named <cite>reading_laser</cite>.</p></li>
+<li><p>Subscribes to <cite>/scan</cite> for laser data.</p></li>
+<li><p>Advertises the <cite>/wall_follower_switch</cite> service for toggling wall-following.</p></li>
+<li><p>Runs a loop at ~20 Hz:
+- If disabled, does nothing.
+- If enabled, checks the current state and calls the appropriate function to control motion.</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.wall_follow_service.take_action">
+<span class="sig-prename descclassname"><span class="pre">scripts.wall_follow_service.</span></span><span class="sig-name descname"><span class="pre">take_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/wall_follow_service.html#take_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.wall_follow_service.take_action" title="Link to this definition"></a></dt>
+<dd><p>Determines the appropriate action based on the detected obstacles and changes the robot’s state accordingly.</p>
+<dl class="simple">
+<dt>This function checks the distances in front, fright, and fleft to decide:</dt><dd><ul class="simple">
+<li><p>If there’s a clear path ahead and on sides, it goes to state 0 (find the wall).</p></li>
+<li><p>If the front is blocked, it turns left (state 1).</p></li>
+<li><p>If the fright is too close, it follows the wall (state 2).</p></li>
+<li><p>If the fleft is too close, also revert to find wall (state 0).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.wall_follow_service.turn_left">
+<span class="sig-prename descclassname"><span class="pre">scripts.wall_follow_service.</span></span><span class="sig-name descname"><span class="pre">turn_left</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/wall_follow_service.html#turn_left"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.wall_follow_service.turn_left" title="Link to this definition"></a></dt>
+<dd><p>Generates a velocity command to turn left in place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Twist message to turn the robot.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>geometry_msgs.msg.Twist</p>
+</dd>
+</dl>
+<p>Typically triggered when the robot detects an obstacle ahead.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.wall_follow_service.wall_follower_switch">
+<span class="sig-prename descclassname"><span class="pre">scripts.wall_follow_service.</span></span><span class="sig-name descname"><span class="pre">wall_follower_switch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">req</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/wall_follow_service.html#wall_follower_switch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.wall_follow_service.wall_follower_switch" title="Link to this definition"></a></dt>
+<dd><p>Service callback to enable or disable the wall-following behavior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>req</strong> (<em>std_srvs.srv.SetBoolRequest</em>) – Service request containing a boolean value.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response confirming the operation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>std_srvs.srv.SetBoolResponse</p>
+</dd>
+</dl>
+<p>If True, the node starts reading laser scans and controlling the robot’s velocity
+to maintain a wall-following strategy. If False, the robot stops.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="target_service.html" class="btn btn-neutral float-left" title="Target Service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

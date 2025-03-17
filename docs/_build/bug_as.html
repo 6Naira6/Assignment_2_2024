@@ -1,0 +1,258 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bug Action Server &mdash; Assignment 2 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Go to Point Service" href="go_to_point_service.html" />
+    <link rel="prev" title="Action Client" href="action_client.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Assignment 2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="action_client.html">Action Client</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Bug Action Server</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.bug_as.change_state"><code class="docutils literal notranslate"><span class="pre">change_state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.bug_as.clbk_laser"><code class="docutils literal notranslate"><span class="pre">clbk_laser()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.bug_as.clbk_odom"><code class="docutils literal notranslate"><span class="pre">clbk_odom()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.bug_as.done"><code class="docutils literal notranslate"><span class="pre">done()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.bug_as.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.bug_as.normalize_angle"><code class="docutils literal notranslate"><span class="pre">normalize_angle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.bug_as.planning"><code class="docutils literal notranslate"><span class="pre">planning()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="go_to_point_service.html">Go to Point Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="target_service.html">Target Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wall_follow_service.html">Wall Follow Service</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Assignment 2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Modules</a></li>
+      <li class="breadcrumb-item active">Bug Action Server</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/bug_as.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-scripts.bug_as">
+<span id="bug-action-server"></span><h1>Bug Action Server<a class="headerlink" href="#module-scripts.bug_as" title="Link to this heading"></a></h1>
+<p id="module-bug0"><em>Module author: Arian Tavousi</em></p>
+<p>This ROS node implements a bug0-based navigation strategy. It alternates between
+driving straight to a goal and following walls when obstacles are detected.</p>
+<dl>
+<dt><strong>Subscribers:</strong></dt><dd><ul class="simple">
+<li><p><cite>/scan</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">sensor_msgs.msg.LaserScan</span></code>): Receives laser scan data to identify obstacles.</p></li>
+<li><p><cite>/odom</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nav_msgs.msg.Odometry</span></code>): Receives odometry data to track the robot’s position and orientation.</p></li>
+</ul>
+</dd>
+<dt><strong>Publishers:</strong></dt><dd><ul class="simple">
+<li><p><cite>/cmd_vel</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">geometry_msgs.msg.Twist</span></code>): Publishes velocity commands to move the robot.</p></li>
+</ul>
+</dd>
+<dt><strong>Services:</strong></dt><dd><ul class="simple">
+<li><p><cite>/go_to_point_switch</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">std_srvs.srv.SetBool</span></code>): Toggles the go-to-point functionality.</p></li>
+<li><p><cite>/wall_follower_switch</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">std_srvs.srv.SetBool</span></code>): Toggles the wall-following functionality.</p></li>
+</ul>
+</dd>
+<dt><strong>Action Server:</strong></dt><dd><ul class="simple">
+<li><p><cite>/reaching_goal</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">assignment_2_2024.msg.PlanningAction</span></code>): Receives target positions for navigation.</p></li>
+</ul>
+</dd>
+<dt>Additional Details:</dt><dd><p>This node embodies a “Bug0” approach to navigation:
+1) The robot attempts to move in a direct line toward its goal.
+2) If there is an obstacle directly in front, it switches to wall-following behavior.
+3) Once it can head straight for the goal again, it switches back to go-to-point mode.</p>
+<p>This simple yet effective reactive algorithm helps navigate cluttered environments
+without complex mapping or planning, making it suitable for real-time robotics scenarios.</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.bug_as.change_state">
+<span class="sig-prename descclassname"><span class="pre">scripts.bug_as.</span></span><span class="sig-name descname"><span class="pre">change_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/bug_as.html#change_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.bug_as.change_state" title="Link to this definition"></a></dt>
+<dd><p>Changes the current navigation state and toggles the respective services.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The state to switch to (0 -&gt; go to point, 1 -&gt; wall following, 2 -&gt; done).</p>
+</dd>
+</dl>
+<p>Depending on the state:
+- <strong>Go to point</strong>: Calls <cite>/go_to_point_switch</cite> with True; <cite>/wall_follower_switch</cite> with False.
+- <strong>Wall following</strong>: Calls <cite>/go_to_point_switch</cite> with False; <cite>/wall_follower_switch</cite> with True.
+- <strong>Done</strong>: Disables both to stop movement.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.bug_as.clbk_laser">
+<span class="sig-prename descclassname"><span class="pre">scripts.bug_as.</span></span><span class="sig-name descname"><span class="pre">clbk_laser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/bug_as.html#clbk_laser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.bug_as.clbk_laser" title="Link to this definition"></a></dt>
+<dd><p>Callback for the /scan subscriber.</p>
+<p>Stores the minimum distances in different regions around the robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>msg</strong> (<em>sensor_msgs.msg.LaserScan</em>) – The LaserScan message containing distance readings.</p>
+</dd>
+</dl>
+<p>The node splits the laser range array into slices (right, fright, front, fleft, left),
+each limited to a maximum distance of 10. This helps the robot decide whether to proceed
+forward or switch to wall-following mode.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.bug_as.clbk_odom">
+<span class="sig-prename descclassname"><span class="pre">scripts.bug_as.</span></span><span class="sig-name descname"><span class="pre">clbk_odom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/bug_as.html#clbk_odom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.bug_as.clbk_odom" title="Link to this definition"></a></dt>
+<dd><p>Callback for the /odom subscriber.</p>
+<p>Updates the global <a href="#id1"><span class="problematic" id="id2">position_</span></a>, <a href="#id3"><span class="problematic" id="id4">pose_</span></a>, and <a href="#id5"><span class="problematic" id="id6">yaw_</span></a> variables based on odometry data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>msg</strong> (<em>nav_msgs.msg.Odometry</em>) – The Odometry message containing the robot’s current position and orientation.</p>
+</dd>
+</dl>
+<p>The orientation (yaw) is extracted from the quaternion in the Odometry message and used
+to guide directional checks during navigation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.bug_as.done">
+<span class="sig-prename descclassname"><span class="pre">scripts.bug_as.</span></span><span class="sig-name descname"><span class="pre">done</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/bug_as.html#done"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.bug_as.done" title="Link to this definition"></a></dt>
+<dd><p>Publishes a zero velocity command to stop the robot.</p>
+<p>Typically invoked when the goal is reached or canceled,
+ensuring the robot remains stationary.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.bug_as.main">
+<span class="sig-prename descclassname"><span class="pre">scripts.bug_as.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/bug_as.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.bug_as.main" title="Link to this definition"></a></dt>
+<dd><p>Initializes the node, sets up subscriptions, publishers, and services,
+and starts the action server for receiving navigation goals.</p>
+<p>The node runs at ~20 Hz, continuously checking whether it should go
+forward or switch to wall following. On receiving action goals via
+<cite>/reaching_goal</cite>, it heads toward the target while reacting to obstacles.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.bug_as.normalize_angle">
+<span class="sig-prename descclassname"><span class="pre">scripts.bug_as.</span></span><span class="sig-name descname"><span class="pre">normalize_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/bug_as.html#normalize_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.bug_as.normalize_angle" title="Link to this definition"></a></dt>
+<dd><p>Normalizes the given angle to be within [-pi, pi].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>angle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The angle to normalize (in radians).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The normalized angle.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+<p>This utility helps compare headings by preventing large jumps
+when angles cross the +pi/-pi boundary.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.bug_as.planning">
+<span class="sig-prename descclassname"><span class="pre">scripts.bug_as.</span></span><span class="sig-name descname"><span class="pre">planning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/bug_as.html#planning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.bug_as.planning" title="Link to this definition"></a></dt>
+<dd><p>Action server callback for handling navigation goals.</p>
+<p>Drives the robot towards the desired position, switching to wall-following when needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>goal</strong> (<em>assignment_2_2024.msg.PlanningGoal</em>) – The navigation goal containing the target pose.</p>
+</dd>
+</dl>
+<p>Steps:
+1. Set initial state to “go to point”.
+2. Continuously check the distance to the goal.
+3. If the robot is close, stop the action as “succeeded”.
+4. If there’s an obstacle, switch to wall following.
+5. If the obstacle is cleared, switch back to go to point.
+6. Handle any preemption requests (cancellation).</p>
+<p>During execution, feedback is published so other nodes or tools can track the robot’s status.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="action_client.html" class="btn btn-neutral float-left" title="Action Client" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="go_to_point_service.html" class="btn btn-neutral float-right" title="Go to Point Service" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

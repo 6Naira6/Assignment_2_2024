@@ -1,0 +1,218 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Target Service &mdash; Assignment 2 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Wall Follow Service" href="wall_follow_service.html" />
+    <link rel="prev" title="Go to Point Service" href="go_to_point_service.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Assignment 2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="action_client.html">Action Client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bug_as.html">Bug Action Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="go_to_point_service.html">Go to Point Service</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Target Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scripts.target_service.TargetServiceNode"><code class="docutils literal notranslate"><span class="pre">TargetServiceNode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.target_service.TargetServiceNode.handle_get_target"><code class="docutils literal notranslate"><span class="pre">TargetServiceNode.handle_get_target()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.target_service.TargetServiceNode.target_callback"><code class="docutils literal notranslate"><span class="pre">TargetServiceNode.target_callback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wall_follow_service.html">Wall Follow Service</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Assignment 2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Modules</a></li>
+      <li class="breadcrumb-item active">Target Service</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/target_service.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="target-service">
+<h1>Target Service<a class="headerlink" href="#target-service" title="Link to this heading"></a></h1>
+<p id="module-target_service"><span id="module-scripts.target_service"></span><em>Module author: Arian Tavousi</em></p>
+<p>This node tracks the last received target position and provides a service to retrieve it.</p>
+<dl class="simple">
+<dt><strong>Subscribers:</strong></dt><dd><ul class="simple">
+<li><p><cite>/last_target</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">std_msgs.msg.String</span></code>): Updates the last known target position.</p></li>
+</ul>
+</dd>
+<dt><strong>Services:</strong></dt><dd><ul class="simple">
+<li><p><cite>/get_last_target</cite> (<code class="xref py py-class docutils literal notranslate"><span class="pre">std_srvs.srv.SetBool</span></code>): Returns the last recorded target position.</p></li>
+</ul>
+</dd>
+<dt>Additional Details:</dt><dd><p>This node is especially helpful in multi-node systems that need to share a “last known target”
+without duplicating state logic. By subscribing to the <cite>/last_target</cite> topic, it continuously
+updates its record of the current goal. Other nodes can then call the <cite>/get_last_target</cite> service
+to retrieve the position, which is stored as a simple string (for example, <cite>“x, y”</cite>). This approach
+simplifies cross-node communication and keeps the system’s architecture more modular.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.target_service.TargetServiceNode">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.target_service.</span></span><span class="sig-name descname"><span class="pre">TargetServiceNode</span></span><a class="reference internal" href="_modules/scripts/target_service.html#TargetServiceNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.target_service.TargetServiceNode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A ROS node that tracks the last received target position and provides a service to retrieve it.</p>
+<dl>
+<dt><strong>Attributes:</strong></dt><dd><ul class="simple">
+<li><p><cite>last_target</cite> (str): Stores the last received target position.</p></li>
+</ul>
+</dd>
+<dt>Usage Example:</dt><dd><ol class="arabic">
+<li><p>Start this node:
+.. code-block:: bash</p>
+<blockquote>
+<div><p>rosrun assignment_2_2024 target_service.py</p>
+</div></blockquote>
+</li>
+<li><p>Publish a new target:
+.. code-block:: bash</p>
+<blockquote>
+<div><p>rostopic pub /last_target std_msgs/String “data: ‘4.0, 3.0’”</p>
+</div></blockquote>
+</li>
+<li><p>Request the last target:
+.. code-block:: bash</p>
+<blockquote>
+<div><p>rosservice call /get_last_target true</p>
+</div></blockquote>
+</li>
+</ol>
+<p>You should see output like:
+.. code-block:: none</p>
+<blockquote>
+<div><p>success: True
+message: “4.0, 3.0”</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>By maintaining a single reference to the latest goal, this node helps ensure that all other
+components in the system have easy, consistent access to the most current target.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.target_service.TargetServiceNode.handle_get_target">
+<span class="sig-name descname"><span class="pre">handle_get_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">req</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/target_service.html#TargetServiceNode.handle_get_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.target_service.TargetServiceNode.handle_get_target" title="Link to this definition"></a></dt>
+<dd><p>Service handler for <cite>/get_last_target</cite>.</p>
+<p>Returns the last known target position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>req</strong> (<em>std_srvs.srv.SetBool</em>) – The service request (unused).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The last recorded target position as a service response.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>std_srvs.srv.SetBoolResponse</p>
+</dd>
+</dl>
+<p>The returned <cite>message</cite> field contains the target in <cite>“x, y”</cite> format,
+or <cite>“0.0, 0.0”</cite> if no valid target has been received yet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.target_service.TargetServiceNode.target_callback">
+<span class="sig-name descname"><span class="pre">target_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/target_service.html#TargetServiceNode.target_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.target_service.TargetServiceNode.target_callback" title="Link to this definition"></a></dt>
+<dd><p>Callback function for the <cite>/last_target</cite> topic.</p>
+<p>Updates the stored last target position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>msg</strong> (<em>std_msgs.msg.String</em>) – The message containing the new target position.</p>
+</dd>
+</dl>
+<p>The node logs every update so you can track changes in real time.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="go_to_point_service.html" class="btn btn-neutral float-left" title="Go to Point Service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wall_follow_service.html" class="btn btn-neutral float-right" title="Wall Follow Service" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
